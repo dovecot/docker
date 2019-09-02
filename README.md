@@ -9,6 +9,8 @@ Logins
 To push into docker hub you need an docker hub account linked to Dovecot organization.
 Ask from Aki Tuomi / Timo Sirainen for access.
 
+Once you have access, you can use `docker login` to enable pushing to this repository.
+
 Making new image
 ----------------
 
