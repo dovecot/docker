@@ -9,6 +9,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get -y update && apt-get -y install \
   dovecot-core \
+  dovecot-coi \
   dovecot-gssapi \
   dovecot-imapd \
   dovecot-ldap \
