@@ -1,24 +1,9 @@
-Instructions
-============
+Dovecot CE docker image source files
+====================================
 
-This repository contains images that are published to https://hub.docker.com/u/dovecot.
+This repository contains Dockerfile and assets for images that are published to https://hub.docker.com/u/dovecot.
 
-Logins
-------
+License
+-------
 
-To push into docker hub you need an docker hub account linked to Dovecot organization.
-Ask from Aki Tuomi / Timo Sirainen for access.
-
-Once you have access, you can use `docker login` to enable pushing to this repository.
-
-Making new image
-----------------
-
-Copy existing directory, update version(s) and run
-
-```.sh
-docker build -t dovecot/dovecot:<version>
-docker tag dovecot/dovecot:<version> dovecot/dovecot:latest
-docker push dovecot/dovecot:version
-docker push dovecot/dovecot:latest
-```
+The source code for these docker images is licensed under Attribution-NonCommercial-ShareAlike 4.0 International, but you are welcome to use the images hosted at docker.com for commercial purposes.
