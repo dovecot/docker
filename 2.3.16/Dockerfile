@@ -1,11 +1,13 @@
 FROM debian:10
+
+ENV container=docker \
+    LC_ALL=C \
+    TINI_VERSION=v0.18.0
+ARG DEBIAN_FRONTEND=noninteractive
+
 ADD dovecot.gpg /etc/apt/trusted.gpg.d
 ADD dovecot.list /etc/apt/sources.list.d
-ENV TINI_VERSION v0.18.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
-ENV container docker
-ENV LC_ALL C
-ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get -y update && apt-get -y install \
   dovecot-core \
@@ -35,7 +37,7 @@ RUN apt-get -y update && apt-get -y install \
   mkdir /etc/dovecot && \
   ln -s /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/dovecot/cert.pem && \
   ln -s /etc/ssl/private/ssl-cert-snakeoil.key /etc/dovecot/key.pem
- 
+
 ADD dovecot.conf /etc/dovecot/dovecot.conf
 
 VOLUME ["/etc/dovecot", "/srv/mail"]
