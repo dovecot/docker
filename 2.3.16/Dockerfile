@@ -1,5 +1,7 @@
 FROM debian:10
 
+LABEL org.opencontainers.image.authors="dovecot@dovecot.org"
+
 ENV container=docker \
     LC_ALL=C \
     TINI_VERSION=v0.18.0
