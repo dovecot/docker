@@ -1,8 +1,10 @@
 FROM debian:10
 
+LABEL org.opencontainers.image.authors="dovecot@dovecot.org"
+
 ENV container=docker \
     LC_ALL=C \
-    TINI_VERSION=v0.18.0
+    TINI_VERSION=v0.19.0
 ARG DEBIAN_FRONTEND=noninteractive
 
 ADD dovecot.gpg /etc/apt/trusted.gpg.d
@@ -26,6 +28,7 @@ RUN apt-get -y update && apt-get -y install \
   dovecot-submissiond \
   ca-certificates \
   ssl-cert && \
+  rm -rf /var/lib/apt/lists && \
   groupadd -g 1000 vmail && \
   useradd -u 1000 -g 1000 vmail -d /srv/vmail && \
   passwd -l vmail && \
