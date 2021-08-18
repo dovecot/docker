@@ -4,7 +4,7 @@ LABEL org.opencontainers.image.authors="dovecot@dovecot.org"
 
 ENV container=docker \
     LC_ALL=C \
-    TINI_VERSION=v0.18.0
+    TINI_VERSION=v0.19.0
 ARG DEBIAN_FRONTEND=noninteractive
 
 ADD dovecot.gpg /etc/apt/trusted.gpg.d
