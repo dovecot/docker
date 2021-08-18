@@ -26,6 +26,7 @@ RUN apt-get -y update && apt-get -y install \
   dovecot-submissiond \
   ca-certificates \
   ssl-cert && \
+  rm -rf /var/lib/apt/lists && \
   groupadd -g 1000 vmail && \
   useradd -u 1000 -g 1000 vmail -d /srv/vmail && \
   passwd -l vmail && \
