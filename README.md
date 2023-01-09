@@ -7,3 +7,22 @@ License
 -------
 
 The source code for these docker images is licensed under Attribution-NonCommercial-ShareAlike 4.0 International, but you are welcome to use the images hosted at docker.com for commercial purposes.
+
+Instructions
+------------
+
+This image comes with default configuration which accepts any user with password pass. To customize the image, mount /etc/dovecot and /srv/mail volumes.
+Listeners
+
+ - POP3 on 110, TLS 995
+ - IMAP on 143, TLS 993
+ - Submission on 587
+ - LMTP on 24
+ - ManageSieve on 4190
+
+To run these images, simply use `docker run dovecot/dovecot:version`.
+
+Help
+----
+
+Note that these images come with absolutely no warranty or support. For questions and feedback send email to dovecot@dovecot.org.
