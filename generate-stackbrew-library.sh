@@ -17,7 +17,7 @@ GitRepo: https://github.com/dovecot/docker.git
 EOH
 
 ## FIXME: Add support for 2.3-latest when 2.4 is out
-latest=", latest"
+latest=", 2.3, latest"
 
 head=$(git log -1 --format='format:%H' HEAD)
 
