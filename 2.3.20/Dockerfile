@@ -41,6 +41,15 @@ RUN apt-get -y update && apt-get -y install \
 
 ADD dovecot.conf /etc/dovecot/dovecot.conf
 
+EXPOSE 24
+EXPOSE 110
+EXPOSE 143
+EXPOSE 485
+EXPOSE 587
+EXPOSE 990
+EXPOSE 993
+EXPOSE 4190
+
 VOLUME ["/etc/dovecot", "/srv/mail"]
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/usr/sbin/dovecot", "-F"]
