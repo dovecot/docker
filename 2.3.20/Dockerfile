@@ -1,4 +1,4 @@
-FROM debian:11
+FROM debian:11-slim
 
 LABEL org.opencontainers.image.authors="dovecot@dovecot.org"
 
