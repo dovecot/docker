@@ -22,6 +22,9 @@ Listeners
 
 To run these images, simply use `docker run dovecot/dovecot:version`.
 
+From 2.3.20+ you can also mount /etc/dovecot/conf.d with configuration files, that are going to get read by Dovecot. You can use these to overwrite or add
+settings. Files must end in .conf.
+
 Help
 ----
 
