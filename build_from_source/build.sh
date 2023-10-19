@@ -40,7 +40,8 @@ function print_usage()
 
 
 IMAGE_NAME="dovecot-ce"
-IMAGE_TAG="latest"
+DOVECOT_VERSION=""
+IMAGE_TAG=""
 BUILD_ARGS=()
 OPTIND=1
 while getopts "hd:p:r:i:t:" OPT; do
@@ -48,7 +49,7 @@ while getopts "hd:p:r:i:t:" OPT; do
   h)
     print_usage; exit 0 ;;
   d)
-    BUILD_ARGS+=(--build-arg DOVECOT_VERSION=$OPTARG) ;;
+    DOVECOT_VERSION=$OPTARG; BUILD_ARGS+=(--build-arg DOVECOT_VERSION=$OPTARG) ;;
   p)
     BUILD_ARGS+=(--build-arg PIGEONHOLE_VERSION=$OPTARG) ;;
   r)
@@ -63,6 +64,15 @@ while getopts "hd:p:r:i:t:" OPT; do
 done
 shift $(expr $OPTIND - 1)
 
+if [ -z "$DOVECOT_VERSION" ]; then
+  echo "Error: Dovecot version must be provided" >&2
+  print_usage >&2
+  exit 1
+fi
+
+if [ -z "$IMAGE_TAG" ]; then
+  IMAGE_TAG=$DOVECOT_VERSION
+fi
 
 
 docker build ${BUILD_ARGS[@]} -t $IMAGE_NAME:$IMAGE_TAG $@
