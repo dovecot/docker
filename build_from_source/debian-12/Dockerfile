@@ -104,6 +104,7 @@ COPY --from=build /dovecot/bin/ /dovecot/bin/
 COPY --from=build /dovecot/sbin/ /dovecot/sbin/
 COPY --from=build /dovecot/lib/dovecot/ /dovecot/lib/dovecot/
 COPY --from=build /dovecot/lib/modules/ /dovecot/lib/modules/
+COPY --from=build /dovecot/include/ /dovecot/include/
 COPY --from=build /dovecot/share/man/man1/* /usr/share/man/man1/
 COPY --from=build /dovecot/share/man/man7/* /usr/share/man/man7/
 COPY --from=build /dovecot/share/doc/* /usr/share/doc/
