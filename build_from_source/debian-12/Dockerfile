@@ -4,8 +4,8 @@ ENV container=docker \
     LC_ALL=C
 ARG DEBIAN_FRONTEND=noninteractive
 ARG DOVECOT_REPO_URL=https://github.com/dovecot
-ARG DOVECOT_VERSION=2.3.21
-ARG PIGEONHOLE_VERSION=0.5.21
+ARG DOVECOT_VERSION=main
+ARG PIGEONHOLE_VERSION=main
 ARG CC=gcc
 ARG EXTRA_CFLAGS="-Wall -Wextra -O2"
 
@@ -21,6 +21,7 @@ RUN apt-get -y install \
   libtool \
   gettext \
   pkg-config \
+  libpam0g-dev \
   bison \
   flex \
   libssl-dev \
@@ -30,6 +31,7 @@ RUN apt-get -y install \
   liblzma-dev \
   liblz4-dev \
   libzstd-dev \
+  libsystemd-dev \
   libcap-dev \
   libsodium-dev \
   libunwind-dev \
@@ -38,9 +40,16 @@ RUN apt-get -y install \
   libpq-dev \
   libsqlite3-dev \
   libexpat1-dev \
-  liblua5.3-dev \
+  liblua5.4-dev \
   libclucene-dev \
   libicu-dev \
+  libsasl2-dev \
+  krb5-multidev \
+  libdb-dev \
+  libcurl4-gnutls-dev \
+  libexpat-dev \
+  libexttextcat-dev \
+  autotools-dev \
   default-libmysqlclient-dev \
   wget
 WORKDIR /root/build/core
@@ -57,33 +66,28 @@ RUN  PANDOC=false ./configure \
     --with-gssapi=plugin \
     --with-solr \
     --with-ioloop=best \
-    --with-libwrap \
     --with-lucene \
     --with-lz4 \
     --prefix=/dovecot \
     --sysconfdir=/etc \
-    --libexecdir=\${prefix}/lib/dovecot \
     --localstatedir=/var \
-    --mandir=\${prefix}/share/man \
-    --infodir=\${prefix}/share/info \
     --docdir=\${prefix}/share/doc/dovecot-core \
-    --with-moduledir=\${prefix}/lib/modules \
-    --with-rundir=/run/dovecot
+    --with-rundir=/run/dovecot \
+    --disable-rpath \
+    --disable-static
+
 RUN make -j V=0
 RUN make install-strip
 WORKDIR /root/build/pigeonhole
-RUN git clone -b release-$PIGEONHOLE_VERSION $DOVECOT_REPO_URL/pigeonhole.git .
+RUN git clone -b $PIGEONHOLE_VERSION $DOVECOT_REPO_URL/pigeonhole.git .
 RUN ./autogen.sh
 RUN ./configure \
     --with-dovecot=/root/build/core \
+    --with-ldap=plugin \
     --prefix=/dovecot \
     --sysconfdir=/etc \
-    --libexecdir=\${prefix}/lib \
-    --mandir=\${prefix}/share/man \
-    --infodir=\${prefix}/share/info \
-    --with-moduledir=\${prefix}/lib/modules \
+    --disable-rpath \
     --disable-static \
-    --with-ldap=plugin \
     --with-unfinished-features
 RUN  make -j V=0
 RUN  make install-strip
@@ -99,12 +103,7 @@ ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/dovecot/lib
 ENV PATH $PATH:/dovecot/bin:/dovecot/sbin
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN mkdir /dovecot
-COPY --from=build /dovecot/bin/ /dovecot/bin/
-COPY --from=build /dovecot/sbin/ /dovecot/sbin/
-COPY --from=build /dovecot/lib/dovecot/ /dovecot/lib/dovecot/
-COPY --from=build /dovecot/lib/modules/ /dovecot/lib/modules/
-COPY --from=build /dovecot/include/ /dovecot/include/
+COPY --from=build /dovecot /dovecot
 COPY --from=build /dovecot/share/man/man1/* /usr/share/man/man1/
 COPY --from=build /dovecot/share/man/man7/* /usr/share/man/man7/
 COPY --from=build /dovecot/share/doc/* /usr/share/doc/
@@ -112,6 +111,7 @@ COPY --from=build /dovecot/share/doc/* /usr/share/doc/
 
 RUN apt-get -y update && apt-get -y install --no-install-recommends \
   tini \
+  pkg-config \
   ssl-cert \
   ucf \
   libldap-2.5-0 \
@@ -140,6 +140,7 @@ RUN apt-get -y update && apt-get -y install --no-install-recommends \
   libpq5 \
   libexpat1 \
   libsqlite3-0 \
+  libcap2 \
   ca-certificates && \
   rm -rf /etc/dovecot && \
   rm -rf /var/lib/apt/lists && \
@@ -156,7 +157,6 @@ RUN chown vmail:vmail /srv/mail && \
   ln -s /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/dovecot/cert.pem && \
   ln -s /etc/ssl/private/ssl-cert-snakeoil.key /etc/dovecot/key.pem
 
-ENV CONFIG_FILE=/etc/dovecot/dovecot.conf
 COPY dovecot.conf /etc/dovecot/dovecot.conf
 
 EXPOSE 24
