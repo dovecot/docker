@@ -9,12 +9,12 @@ ARG PIGEONHOLE_VERSION=release-0.5.21
 ARG CC=gcc
 ARG EXTRA_CFLAGS="-Wall -Wextra -O2"
 
-
 RUN mkdir /dovecot
 RUN apt-get -y update
-RUN apt-get -y install \
+RUN apt-get -y install --no-install-recommends \
   git \
   build-essential \
+  ca-certificates \
   make \
   autoconf \
   automake \
@@ -42,7 +42,6 @@ RUN apt-get -y install \
   libexpat1-dev \
   liblua5.4-dev \
   libclucene-dev \
-  libicu-dev \
   libsasl2-dev \
   krb5-multidev \
   libdb-dev \
@@ -109,7 +108,8 @@ COPY --from=build /dovecot/share/man/man7/* /usr/share/man/man7/
 COPY --from=build /dovecot/share/doc/* /usr/share/doc/
 
 
-RUN apt-get -y update && apt-get -y install --no-install-recommends \
+RUN apt-get -y update && \
+  apt-get -y install --no-install-recommends \
   tini \
   pkg-config \
   ssl-cert \

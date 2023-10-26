@@ -2,7 +2,6 @@
 
 set -eu
 
-
 # Transform long options to short ones
 for arg in "$@"; do
   shift
@@ -73,6 +72,5 @@ fi
 if [ -z "$IMAGE_TAG" ]; then
   IMAGE_TAG=$DOVECOT_VERSION
 fi
-
 
 docker build ${BUILD_ARGS[@]} -t $IMAGE_NAME:$IMAGE_TAG $@
