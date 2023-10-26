@@ -73,4 +73,7 @@ if [ -z "$IMAGE_TAG" ]; then
   IMAGE_TAG=$DOVECOT_VERSION
 fi
 
+DOCKER_BUILDKIT=1
+docker help buildx &> /dev/null || DOCKER_BUILDKIT=0
+export DOCKER_BUILDKIT
 docker build ${BUILD_ARGS[@]} -t $IMAGE_NAME:$IMAGE_TAG $@
