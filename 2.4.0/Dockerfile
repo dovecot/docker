@@ -170,7 +170,6 @@ RUN apt-get -y update && \
  ln -s /etc/ssl/private/ssl-cert-snakeoil.key /etc/dovecot/ssl/tls.key && \
  chown root:vmail /etc/dovecot/ssl/tls.key && \
  chmod 0440 /etc/dovecot/ssl/tls.key && \
- setcap cap_net_bind_service+ep /dovecot/sbin/dovecot && \
  setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/script-login && \
  setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/imap-urlauth-login && \
  setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/imap-urlauth-login && \
@@ -195,13 +194,13 @@ RUN apt-get -y update && \
 
 COPY dovecot.conf /etc/dovecot/dovecot.conf
 
-EXPOSE 24
-EXPOSE 110
-EXPOSE 143
-EXPOSE 587
-EXPOSE 990
-EXPOSE 993
-EXPOSE 4190
+EXPOSE 31024
+EXPOSE 31110
+EXPOSE 31143
+EXPOSE 31587
+EXPOSE 31990
+EXPOSE 31993
+EXPOSE 34190
 EXPOSE 8080
 EXPOSE 9090
 USER vmail
