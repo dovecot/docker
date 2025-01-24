@@ -172,7 +172,6 @@ RUN apt-get -y update && \
  setcap cap_net_bind_service+ep /dovecot/sbin/dovecot && \
  setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/script-login && \
  setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/imap-urlauth-login && \
- setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/imap-urlauth-login && \
  setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/submission-login && \
  setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/managesieve-login && \
  setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/pop3-login && \
