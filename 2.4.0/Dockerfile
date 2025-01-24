@@ -145,6 +145,7 @@ RUN apt-get -y update && \
   libicu72 \
   libcap2 \
   libcap2-bin \
+  netcat-traditional \
   ca-certificates && \
  rm -rf /etc/dovecot && \
  rm -rf /var/lib/apt/lists && \
