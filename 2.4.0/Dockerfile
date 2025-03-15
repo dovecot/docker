@@ -178,18 +178,7 @@ RUN apt-get -y update && \
  setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/imap-login && \
  setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/lmtp && \
  setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/anvil && \
- setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/managesieve-login && \
- apt remove --allow-remove-essential -yq \
-  bash \
-  pkg-config \
-  util-linux \
-  util-linux-extra \
-  e2fsprogs \
-  perl \
-  perl-base \
-  libcap2-bin && \
- ln -srf /bin/true /usr/share/debconf/frontend && \
- dpkg --remove --force-remove-essential --force-depends apt dpkg gzip diffutils findutils init-system-helpers sysvinit-utils coreutils mount
+ setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/managesieve-login 
 
 COPY dovecot.conf /etc/dovecot/dovecot.conf
 
@@ -206,3 +195,25 @@ USER vmail
 VOLUME ["/srv/mail"]
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/dovecot/sbin/dovecot", "-F"]
+
+FROM production as production-slim
+
+
+LABEL org.opencontainers.image.authors="dovecot@dovecot.org"
+
+
+USER root
+
+RUN apt remove --allow-remove-essential -yq \
+  bash \
+  pkg-config \
+  util-linux \
+  util-linux-extra \
+  e2fsprogs \
+  perl \
+  perl-base \
+  libcap2-bin && \
+ ln -srf /bin/true /usr/share/debconf/frontend && \
+ dpkg --remove --force-remove-essential --force-depends apt dpkg gzip diffutils findutils init-system-helpers sysvinit-utils coreutils mount
+
+USER vmail
