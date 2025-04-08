@@ -11,7 +11,7 @@ The source code for these docker images is licensed under Attribution-NonCommerc
 Instructions for 2.4
 ---------------------
 
-This image comes with default configuration which accepts any user with password `password`. To persist data, mount `/srv/mail` volumes.
+This image comes with default configuration which accepts any user with password `password`. To persist data, mount `/srv/vmail` volumes.
 You can also mount extra configuration to override the default settings to `/etc/dovecot/conf.d`.
 
 TLS certificates go to `/etc/dovecot/ssl`, and by default full-chain certificate filename is `tls.crt` and private key file is `tls.key`.
