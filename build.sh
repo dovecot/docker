@@ -9,10 +9,10 @@ DOVECOT_BRANCH=${DOVECOT_BRANCH-$VERSION}
 PIGEONHOLE_BRANCH=${PIGEONHOLE_BRANCH-$VERSION}
 
 amd64_CFLAGS="-g -O2 -mtune=generic -mavx -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -flto=auto -ffat-lto-objects -fstack-clash-protection -fcf-protection"
-arm64_CFLAGS="-g -O2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -flto=auto -ffat-lto-objects -fstack-clash-protection -mharden-sls=all -mbranch-protection=standard"
+arm64_CFLAGS="-g -O2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -fstack-clash-protection -mharden-sls=all -mbranch-protection=standard"
 
 amd64_LDFLAGS="-Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects"
-arm64_LDFLAGS="-Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects"
+arm64_LDFLAGS="-Wl,-Bsymbolic-functions"
 
 for PLATFORM in amd64 arm64; do
 	for stage in "-build" "-root" "-dev" ""; do
