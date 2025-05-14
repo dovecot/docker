@@ -14,7 +14,7 @@ arm64_CFLAGS="-g -O2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -flto=
 amd64_LDFLAGS="-Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects"
 arm64_LDFLAGS="-Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects"
 
-for PLATFORM in arm64; do
+for PLATFORM in amd64 arm64; do
 	for stage in "-build" "-root" "-dev" ""; do
 		PLATFORM_CFLAGS="${PLATFORM}_CFLAGS"
 		PLATFORM_LDFLAGS="${PLATFORM}_LDFLAGS"
