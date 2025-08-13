@@ -149,6 +149,7 @@ RUN apt-get -y update && \
   ssl-cert \
   ucf \
   libldap-2.5-0 \
+  libldap-common \
   openssl \
   libsodium23 \
   libbz2-1.0 \
@@ -182,6 +183,8 @@ RUN apt-get -y update && \
   libicu72 \
   libcap2 \
   libcap2-bin \
+  libsasl2-2 \
+  libsasl2-modules \
   netcat-traditional \
   ca-certificates && \
  rm -rf /etc/dovecot && \
