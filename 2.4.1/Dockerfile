@@ -221,6 +221,7 @@ RUN groupadd --system dovecot && \
  chmod 0440 /etc/dovecot/ssl/tls.key
 
 COPY dovecot.conf /etc/dovecot/dovecot.conf
+COPY auth.conf /etc/dovecot/conf.d/auth.conf
 
 EXPOSE 24
 EXPOSE 110
@@ -269,6 +270,7 @@ RUN chown vmail:vmail /var/lib/dovecot && \
 
 COPY dovecot.conf /etc/dovecot/dovecot.conf
 COPY rootless.conf /etc/dovecot/vendor.d/rootless.conf
+COPY auth.conf /etc/dovecot/conf.d/auth.conf
 
 EXPOSE 31024
 EXPOSE 31110
