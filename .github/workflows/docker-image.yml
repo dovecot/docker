@@ -1,0 +1,28 @@
+name: Docker Image CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Image version to build"
+        required: true
+
+jobs:
+  build_amd64:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build docker image
+      run:  
+  build_aarch64:
+    runs-on: ubuntu-latest-arm
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the Docker image
+    
+
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    
+      
