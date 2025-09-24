@@ -1,8 +1,8 @@
-FROM debian:12-slim as production-build
+# syntax=docker/dockerfile:1
+FROM debian:12-slim AS production-build
 
-ENV container=docker \
-    LC_ALL=C.UTF-8
-ARG DEBIAN_FRONTEND=noninteractive
+ENV container=docker LC_ALL=C.UTF-8 TZ=UTC
+ENV DEBIAN_FRONTEND=noninteractive
 ARG DOVECOT_REPO_URL=https://github.com/dovecot/core
 ARG PIGEONHOLE_REPO_URL=https://github.com/dovecot/pigeonhole
 ARG DOVECOT_VERSION=2.4.1
@@ -66,9 +66,9 @@ USER nobody
 
 WORKDIR /build/core
 RUN git clone -b $DOVECOT_BRANCH $DOVECOT_REPO_URL .
+COPY config-wrapper /build/core/config-wrapper
 RUN env VERSION=$DOVECOT_VERSION ./autogen.sh
-RUN env CFLAGS="$CFLAGS -ffile-prefix-map=$PWD=." LDFLAGS="$LDFLAGS" CXXFLAGS="$CFLAGS -ffile-prefix-map=$PWD=. " \
-    ./configure \
+RUN bash ./config-wrapper \
     --with-ldap=plugin \
     --with-sql=plugin \
     --with-lua=plugin \
@@ -97,16 +97,16 @@ RUN env CFLAGS="$CFLAGS -ffile-prefix-map=$PWD=." LDFLAGS="$LDFLAGS" CXXFLAGS="$
     --disable-rpath \
     --disable-static
 
-RUN make -j V=0
+RUN make -j$(nproc) V=0
 RUN [ $(uname -m) = x86_64 ] && make check || true
 USER root
 RUN make install-strip
 USER nobody
 WORKDIR /build/pigeonhole
 RUN git clone -b $PIGEONHOLE_BRANCH $PIGEONHOLE_REPO_URL .
+COPY config-wrapper /build/pigeonhole/config-wrapper
 RUN env VERSION=$PIGEONHOLE_VERSION ./autogen.sh
-RUN env CFLAGS="$CFLAGS -ffile-prefix-map=$PWD=." LDFLAGS="$LDFLAGS" CXXFLAGS="$CFLAGS -ffile-prefix-map=$PWD=. " \
-    ./configure \
+RUN bash ./config-wrapper \
     --with-dovecot=/build/core \
     --with-ldap=plugin \
     --prefix=/dovecot \
@@ -120,23 +120,20 @@ RUN env CFLAGS="$CFLAGS -ffile-prefix-map=$PWD=." LDFLAGS="$LDFLAGS" CXXFLAGS="$
     --with-retpoline=thunk \
     --with-unfinished-features
 
-RUN make -j V=0
+RUN make -j$(nproc) V=0
 RUN [ $(uname -m) = x86_64 ] && make check || true
 USER root
 RUN make install-strip
+RUN echo /dovecot/lib > /etc/ld.so.conf.d/dovecot.conf
 RUN chown -R root:root /dovecot
 RUN wget https://github.com/dovecot/imaptest/releases/download/latest/imaptest-x86_64-debian-12 -O /dovecot/bin/imaptest
 RUN chmod 0755 /dovecot/bin/imaptest
 
-FROM debian:12-slim as production-base
+FROM debian:12-slim AS production-base
 
-LABEL org.opencontainers.image.authors="dovecot@dovecot.org"
-
-ENV container=docker \
-    LC_ALL=C.UTF-8 TZ=UTC
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/dovecot/lib
-ENV PATH $PATH:/dovecot/bin:/dovecot/sbin
-ARG DEBIAN_FRONTEND=noninteractive
+ENV container=docker LC_ALL=C.UTF-8 TZ=UTC
+ENV PATH=/sbin/:/bin:/dovecot/bin:/dovecot/sbin
+ENV DEBIAN_FRONTEND=noninteractive
 ARG VMAIL_UID=1000
 ARG VMAIL_GID=1000
 
@@ -201,14 +198,11 @@ RUN apt-get -y update && \
  mkdir /srv/vmail -p && \
  mkdir /var/lib/dovecot
 
-FROM production-base as production-root
+FROM production-base AS production-root
 
-LABEL org.opencontainers.image.authors="dovecot@dovecot.org"
-ENV container=docker \
-    LC_ALL=C.UTF-8 TZ=UTC
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/dovecot/lib
-ENV PATH $PATH:/dovecot/bin:/dovecot/sbin
-ARG DEBIAN_FRONTEND=noninteractive
+ENV container=docker LC_ALL=C.UTF-8 TZ=UTC
+ENV PATH=/sbin/:/bin:/dovecot/bin:/dovecot/sbin
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN groupadd --system dovecot && \
  groupadd --system dovenull && \
@@ -238,16 +232,13 @@ VOLUME ["/srv/mail"]
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/dovecot/sbin/dovecot", "-F"]
 
-FROM production-base as production-dev
+FROM production-base AS production-dev
 
 USER root
 
-LABEL org.opencontainers.image.authors="dovecot@dovecot.org"
-ENV container=docker \
-    LC_ALL=C.UTF-8 TZ=UTC
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/dovecot/lib
-ENV PATH $PATH:/dovecot/bin:/dovecot/sbin
-ARG DEBIAN_FRONTEND=noninteractive
+ENV container=docker LC_ALL=C.UTF-8 TZ=UTC
+ENV PATH=/sbin/:/bin:/dovecot/bin:/dovecot/sbin
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN chown vmail:vmail /var/lib/dovecot && \
  chown vmail:vmail /srv/vmail && \
@@ -257,16 +248,7 @@ RUN chown vmail:vmail /var/lib/dovecot && \
  ln -s /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/dovecot/ssl/tls.crt && \
  ln -s /etc/ssl/private/ssl-cert-snakeoil.key /etc/dovecot/ssl/tls.key && \
  chown root:vmail /etc/dovecot/ssl/tls.key && \
- chmod 0440 /etc/dovecot/ssl/tls.key && \
- setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/script-login && \
- setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/imap-urlauth-login && \
- setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/submission-login && \
- setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/managesieve-login && \
- setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/pop3-login && \
- setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/imap-login && \
- setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/lmtp && \
- setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/anvil && \
- setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/managesieve-login
+ chmod 0440 /etc/dovecot/ssl/tls.key
 
 COPY dovecot.conf /etc/dovecot/dovecot.conf
 COPY rootless.conf /etc/dovecot/vendor.d/rootless.conf
@@ -286,15 +268,11 @@ VOLUME ["/srv/mail"]
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/dovecot/sbin/dovecot", "-F"]
 
-FROM production-dev as production
+FROM production-dev AS production
 
-LABEL org.opencontainers.image.authors="dovecot@dovecot.org"
-
-ENV container=docker \
-    LC_ALL=C.UTF-8 TZ=UTC
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/dovecot/lib
-ENV PATH $PATH:/dovecot/bin:/dovecot/sbin
-ARG DEBIAN_FRONTEND=noninteractive
+ENV container=docker LC_ALL=C.UTF-8 TZ=UTC
+ENV PATH=/sbin/:/bin:/dovecot/bin:/dovecot/sbin
+ENV DEBIAN_FRONTEND=noninteractive
 
 USER root
 

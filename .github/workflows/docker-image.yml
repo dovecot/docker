@@ -1,0 +1,157 @@
+name: Docker Image Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Image version to build"
+        required: true
+      latest:
+        description: "Publish as latest"
+        required: true
+        type: boolean
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-24.04
+          arch: amd64
+        - os: ubuntu-24.04-arm
+          arch: arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Login to registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ github.token }}
+    - name: Checkout repository
+      uses: actions/checkout@v5
+    - name: Build base image
+      uses: docker/build-push-action@v6
+      with:
+        context: ${{ inputs.VERSION }}
+        push: true
+        tags: ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-base-${{ matrix.arch }}
+        target: production-base
+        platforms: |
+          linux/${{ matrix.arch }}
+        build-args: |
+          DOVECOT_REPO_URL=${{ vars.DOVECOT_REPO_URL }}
+          DOVECOT_BRANCH=${{ inputs.VERSION }}
+          PIGEONHOLE_REPO_URL=${{ vars.PIGEONHOLE_REPO_URL }}
+          PIGEONHOLE_BRANCH=${{ inputs.VERSION }}
+        cache-to: type=registry,ref=${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-buildcache-${{ matrix.arch }},mode=max
+        cache-from: type=registry,ref=${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-buildcache-${{ matrix.arch }}
+        annotations: |
+          org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          org.opencontainers.image.title=dovecot ${{ inputs.version }} base image
+          org.opencontainers.image.description=base image used to derive the other variants
+          org.opencontainers.image.licenses=cc-by-sa-4.0
+          org.opencontainers.image.authors=dovecot@dovecot.org
+        labels: |
+          org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          org.opencontainers.image.title=dovecot ${{ inputs.version }} base image
+          org.opencontainers.image.description=base image used to derive the other variants
+          org.opencontainers.image.licenses=cc-by-sa-4.0
+          org.opencontainers.image.authors=dovecot@dovecot.org
+    - name: Build root image
+      uses: docker/build-push-action@v6
+      with:
+        context: ${{ inputs.VERSION }}
+        push: true
+        tags: ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-root-${{ matrix.arch }}
+        target: production-root
+        platforms: |
+          linux/${{ matrix.arch }}
+        build-contexts: |
+          production-base=docker-image://${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-base-${{ matrix.arch }}
+        annotations: |
+          org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          org.opencontainers.image.title=Dovecot IMAP server ${{ inputs.VERSION }} unconfined
+          org.opencontainers.image.description=Dovecot IMAP servers running as root
+          org.opencontainers.image.licenses=CC-BY-SA-4.0
+          org.opencontainers.image.authors=dovecot@dovecot.org
+        labels: |
+          org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          org.opencontainers.image.title=Dovecot IMAP server ${{ inputs.VERSION }} unconfined
+          org.opencontainers.image.description=Dovecot IMAP servers running as root
+          org.opencontainers.image.licenses=CC-BY-SA-4.0
+          org.opencontainers.image.authors=dovecot@dovecot.org
+    - name: Build dev image
+      uses: docker/build-push-action@v6
+      with:
+        context: ${{ inputs.VERSION }}
+        push: true
+        tags: ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-dev-${{ matrix.arch }}
+        target: production-dev
+        platforms: |
+          linux/${{ matrix.arch }}
+        build-contexts: |
+          production-base=docker-image://${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-base-${{ matrix.arch }}
+        annotations: |
+          org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          org.opencontainers.image.title=Dovecot IMAP server ${{ inputs.VERSION }} development
+          org.opencontainers.image.description=Dovecot IMAP server image running rootless, for development and debugging purposes
+          org.opencontainers.image.licenses=CC-BY-SA-4.0
+          org.opencontainers.image.authors=dovecot@dovecot.org
+        labels: |
+          org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          org.opencontainers.image.title=Dovecot IMAP server ${{ inputs.VERSION }} development
+          org.opencontainers.image.description=Dovecot IMAP server image running rootless, for development and debugging purposes
+          org.opencontainers.image.licenses=CC-BY-SA-4.0
+          org.opencontainers.image.authors=dovecot@dovecot.org
+    - name: Build rootless image
+      uses: docker/build-push-action@v6
+      with:
+        context: ${{ inputs.VERSION }}
+        push: true
+        tags: ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-${{ matrix.arch }}
+        target: production
+        platforms: |
+          linux/${{ matrix.arch }}
+        build-contexts: |
+          production-base=docker-image://${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-base-${{ matrix.arch }}
+          production-dev=docker-image://${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-dev-${{ matrix.arch }}
+        annotations: |
+          org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          org.opencontainers.image.title=Dovecot IMAP server ${{ inputs.VERSION }}
+          org.opencontainers.image.description=Dovecot IMAP server ${{ inputs.VERSION }} running in confined mode
+          org.opencontainers.image.licenses=CC-BY-SA-4.0
+          org.opencontainers.image.authors=dovecot@dovecot.org
+        labels: |
+          org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          org.opencontainers.image.title=Dovecot IMAP server ${{ inputs.VERSION }}
+          org.opencontainers.image.description=Dovecot IMAP server ${{ inputs.VERSION }} running in confined mode
+          org.opencontainers.image.licenses=CC-BY-SA-4.0
+          org.opencontainers.image.authors=dovecot@dovecot.org
+
+  publish:
+    needs: [build]
+    strategy:
+      matrix:
+        type:
+          - ${{ inputs.VERSION }}-root
+          - ${{ inputs.VERSION }}-dev
+          - ${{ inputs.VERSION }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Login to registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ github.token }}
+    - name: Publish manifest for ${{ matrix.type }}
+      run: |
+        docker run --rm mplatform/manifest-tool:v2.2.1 --username ${{ github.repository_owner }} --password ${{ github.token }} push from-args \
+          --platforms linux/amd64,linux/arm64 \
+          --template ${{ vars.REGISTRY }}/dovecot:${{ matrix.type }}-ARCH \
+          --target ${{ vars.REGISTRY }}/dovecot:${{ matrix.type }}
