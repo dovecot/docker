@@ -13,17 +13,4 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build base image
-      run: docker buildx build --build-arg CFLAGS="g -O2 -mtune=generic -mavx -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -flto=auto -ffat-lto-objects -fstack-clash-protection -
-fcf-protection -mharden-sls=all" --build-arg LDFLASG="-Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects" --build-arg DOVECOT_REPO_URL=${{ env.DOVECOT_REPO_URL }} --build-arg DOVECOT_BRANCH=${{ inputs.VERSION }} --build-arg PIGEONHOLE_REPO_URL=${{ env.PIGEONHOLE_REPO_URL }} --build-arg PIGEONHOLE_BRANCH=${{ inputs.VERSION }} --target production-build --tag dovecot/dovecot:${{ inputs.VERSION }}-build-amd64 ${{ inputs.VERSION }} 
-#  build_aarch64:
-#    runs-on: ubuntu-latest-arm
-#    steps:
-#    - uses: actions/checkout@v4
-#    - name: Build the Docker image
-    
-
-#  publish:
-#    runs-on: ubuntu-latest
-#    steps:
-    
-      
+      run: docker buildx build --build-arg CFLAGS="g -O2 -mtune=generic -mavx -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -flto=auto -ffat-lto-objects -fstack-clash-protection -fcf-protection -mharden-sls=all" --build-arg LDFLASG="-Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects" --build-arg DOVECOT_REPO_URL=${{ env.DOVECOT_REPO_URL }} --build-arg DOVECOT_BRANCH=${{ inputs.VERSION }} --build-arg PIGEONHOLE_REPO_URL=${{ env.PIGEONHOLE_REPO_URL }} --build-arg PIGEONHOLE_BRANCH=${{ inputs.VERSION }} --target production-build --tag dovecot/dovecot:${{ inputs.VERSION }}-build-amd64 ${{ inputs.VERSION }}
