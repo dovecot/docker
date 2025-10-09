@@ -202,6 +202,7 @@ RUN apt-get -y update && \
  mkdir /var/lib/dovecot
 
 COPY auth.conf /etc/dovecot/conf.d/auth.conf
+COPY ssl.conf /etc/dovecot/conf.d/ssl.conf
 
 FROM production-base AS production-root
 
