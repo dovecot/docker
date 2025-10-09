@@ -221,6 +221,7 @@ RUN groupadd --system dovecot && \
 
 COPY dovecot.conf /etc/dovecot/dovecot.conf
 COPY auth.conf /etc/dovecot/conf.d/auth.conf
+COPY ssl.conf /etc/dovecot/conf.d/ssl.conf
 
 EXPOSE 24
 EXPOSE 110
