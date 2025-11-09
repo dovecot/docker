@@ -42,6 +42,8 @@ RUN apt-get -y install --no-install-recommends \
   libsqlite3-dev \
   libexpat1-dev \
   liblua5.3-dev \
+  libpcre2-32-0 \
+  libpcre2-dev \
   lua-json \
   lua-lpeg \
   lua-posix \
@@ -185,6 +187,7 @@ RUN apt-get -y update && \
   libcap2-bin \
   libsasl2-2 \
   libsasl2-modules \
+  libpcre2-32-0 \
   netcat-traditional \
   ca-certificates && \
  rm -rf /etc/dovecot && \
