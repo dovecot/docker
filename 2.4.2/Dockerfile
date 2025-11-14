@@ -210,6 +210,7 @@ COPY fts.conf /etc/dovecot/conf.d/fts.conf
 COPY mail.conf /etc/dovecot/conf.d/mail.conf
 COPY metrics.conf /etc/dovecot/conf.d/metrics.conf
 COPY mail_log.conf /etc/dovecot/conf.d/mail_log.conf
+COPY dovecot.conf /etc/dovecot/dovecot.conf
 
 FROM production-base AS production-root
 
@@ -228,8 +229,6 @@ RUN groupadd --system dovecot && \
  ln -s /etc/ssl/private/ssl-cert-snakeoil.key /etc/dovecot/ssl/tls.key && \
  chown root:dovecot /etc/dovecot/ssl/tls.key && \
  chmod 0440 /etc/dovecot/ssl/tls.key
-
-COPY dovecot.conf /etc/dovecot/dovecot.conf
 
 EXPOSE 24
 EXPOSE 110
@@ -275,7 +274,6 @@ RUN chown vmail:vmail /var/lib/dovecot && \
  setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/anvil && \
  setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/managesieve-login
 
-COPY dovecot.conf /etc/dovecot/dovecot.conf
 COPY rootless.conf /etc/dovecot/vendor.d/rootless.conf
 
 EXPOSE 31024
