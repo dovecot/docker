@@ -206,6 +206,10 @@ RUN apt-get -y update && \
 
 COPY auth.conf /etc/dovecot/conf.d/auth.conf
 COPY ssl.conf /etc/dovecot/conf.d/ssl.conf
+COPY fts.conf /etc/dovecot/conf.d/fts.conf
+COPY mail.conf /etc/dovecot/conf.d/mail.conf
+COPY metrics.conf /etc/dovecot/conf.d/metrics.conf
+COPY mail_log.conf /etc/dovecot/conf.d/mail_log.conf
 
 FROM production-base AS production-root
 
