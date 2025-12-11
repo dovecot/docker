@@ -46,8 +46,6 @@ jobs:
           DOVECOT_BRANCH=${{ inputs.VERSION }}
           PIGEONHOLE_REPO_URL=${{ vars.PIGEONHOLE_REPO_URL }}
           PIGEONHOLE_BRANCH=${{ inputs.VERSION }}
-        cache-to: type=registry,ref=${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-buildcache-${{ matrix.arch }},mode=max
-        cache-from: type=registry,ref=${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-buildcache-${{ matrix.arch }}
         annotations: |
           org.opencontainers.image.source=https://github.com/${{ github.repository }}
           org.opencontainers.image.title=dovecot ${{ inputs.version }} base image
