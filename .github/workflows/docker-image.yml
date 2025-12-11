@@ -46,6 +46,8 @@ jobs:
           DOVECOT_BRANCH=${{ inputs.VERSION }}
           PIGEONHOLE_REPO_URL=${{ vars.PIGEONHOLE_REPO_URL }}
           PIGEONHOLE_BRANCH=${{ inputs.VERSION }}
+          CFLAGS=${{ vars.CFLAGS }}
+          LDFLAGS=${{ vars.LDFLAGS }}
         annotations: |
           org.opencontainers.image.source=https://github.com/${{ github.repository }}
           org.opencontainers.image.title=dovecot ${{ inputs.version }} base image
