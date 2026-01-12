@@ -193,7 +193,7 @@ RUN apt-get -y update && \
  rm -rf /etc/dovecot && \
  rm -rf /var/lib/apt/lists && \
  groupadd -g $VMAIL_GID vmail && \
- useradd -u $VMAIL_UID -g vmail -G ssl-cert -d /srv/mail -s /bin/sh vmail && \
+ useradd -u $VMAIL_UID -g vmail -G ssl-cert -d /nonexistent -s /bin/sh vmail && \
  passwd -l vmail && \
  mkdir -p /run && \
  chmod 1777 /run && \
