@@ -193,7 +193,7 @@ RUN apt-get -y update && \
  rm -rf /etc/dovecot && \
  rm -rf /var/lib/apt/lists && \
  groupadd -g $VMAIL_GID vmail && \
- useradd -u $VMAIL_UID -g vmail -G ssl-cert -d /srv/mail -s /bin/sh vmail && \
+ useradd -u $VMAIL_UID -g vmail -G ssl-cert -d /nonexistent -s /bin/sh vmail && \
  passwd -l vmail && \
  mkdir -p /run && \
  chmod 1777 /run && \
@@ -325,6 +325,6 @@ EXPOSE 34190
 EXPOSE 8080
 EXPOSE 9090
 USER vmail
-VOLUME ["/srv/mail"]
+VOLUME ["/srv/vmail"]
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/dovecot/sbin/dovecot", "-F"]
