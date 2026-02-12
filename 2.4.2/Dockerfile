@@ -286,6 +286,7 @@ EXPOSE 34190
 EXPOSE 8080
 EXPOSE 9090
 USER vmail
+VOLUME ["/srv/vmail"]
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/dovecot/sbin/dovecot", "-F"]
 
@@ -326,5 +327,6 @@ EXPOSE 34190
 EXPOSE 8080
 EXPOSE 9090
 USER vmail
+VOLUME ["/srv/vmail"]
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/dovecot/sbin/dovecot", "-F"]
