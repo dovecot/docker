@@ -195,6 +195,10 @@ RUN apt-get -y update && \
  groupadd -g $VMAIL_GID vmail && \
  useradd -u $VMAIL_UID -g vmail -G ssl-cert -d /nonexistent -s /bin/sh vmail && \
  passwd -l vmail && \
+ groupadd --system dovecot && \
+ groupadd --system dovenull && \
+ useradd -g dovecot --system dovecot && \
+ useradd -g dovenull --system dovenull && \
  mkdir -p /run && \
  chmod 1777 /run && \
  mkdir /etc/dovecot && \
@@ -220,11 +224,7 @@ ENV container=docker \
     PATH=$PATH:/dovecot/bin:/dovecot/sbin
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN groupadd --system dovecot && \
- groupadd --system dovenull && \
- useradd -g dovecot --system dovecot && \
- useradd -g dovenull --system dovenull && \
- make-ssl-cert generate-default-snakeoil && \
+RUN make-ssl-cert generate-default-snakeoil && \
  ln -s /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/dovecot/ssl/tls.crt && \
  ln -s /etc/ssl/private/ssl-cert-snakeoil.key /etc/dovecot/ssl/tls.key && \
  chown root:dovecot /etc/dovecot/ssl/tls.key && \
