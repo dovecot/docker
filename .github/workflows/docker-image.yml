@@ -10,6 +10,10 @@ on:
         description: "Publish as latest"
         required: true
         type: boolean
+      publish:
+        description: "Publish to GitHub"
+        required: true
+        type: boolean
 
 jobs:
   build:
@@ -50,13 +54,13 @@ jobs:
           LDFLAGS=${{ vars.LDFLAGS }}
         annotations: |
           org.opencontainers.image.source=https://github.com/${{ github.repository }}
-          org.opencontainers.image.title=dovecot ${{ inputs.version }} base image
+          org.opencontainers.image.title=dovecot ${{ inputs.VERSION }} base image
           org.opencontainers.image.description=base image used to derive the other variants
           org.opencontainers.image.licenses=cc-by-sa-4.0
           org.opencontainers.image.authors=dovecot@dovecot.org
         labels: |
           org.opencontainers.image.source=https://github.com/${{ github.repository }}
-          org.opencontainers.image.title=dovecot ${{ inputs.version }} base image
+          org.opencontainers.image.title=dovecot ${{ inputs.VERSION }} base image
           org.opencontainers.image.description=base image used to derive the other variants
           org.opencontainers.image.licenses=cc-by-sa-4.0
           org.opencontainers.image.authors=dovecot@dovecot.org
@@ -155,3 +159,81 @@ jobs:
           --platforms linux/amd64,linux/arm64 \
           --template ${{ vars.REGISTRY }}/dovecot:${{ matrix.type }}-ARCH \
           --target ${{ vars.REGISTRY }}/dovecot:${{ matrix.type }}
+
+  publish_latest:
+    if: ${{ inputs.LATEST == true }}
+    needs: [publish]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Login to registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ github.token }}
+    - name: Tag latest images
+      run: |
+        for tag in -root -dev ''; do
+          docker pull ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}$tag
+          docker tag ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}$tag ${{ vars.REGISTRY }}/dovecot:latest$tag
+          docker push ${{ vars.REGISTRY }}/dovecot:latest$tag
+        done
+
+  publish_dockerhub:
+    if: ${{ inputs.PUBLISH == true }}
+    needs: [publish]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Login to registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ github.token }}
+    - name: Login to dockerhub registry
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Republish images to docker.io
+      run: |
+        for stage in "-root" "-dev" ""; do
+          for arch in amd64 arm64; do
+             docker pull --platform $arch ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}$stage-$arch && \
+             docker tag ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}$stage-$arch dovecot/dovecot:${{ inputs.VERSION }}$stage-$arch && \
+             docker push dovecot/dovecot:${{ inputs.VERSION }}$stage-$arch
+          done
+        done
+    - name: Publish multiarch manifests
+      run: |
+        for stage in "-root" "-dev" ""; do
+          # then create manifests
+          docker run --rm mplatform/manifest-tool:v2.2.1 --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_TOKEN }} push from-args \
+                  --platforms linux/amd64,linux/arm64 \
+                  --template dovecot/dovecot:${{ inputs.VERSION }}$stage-ARCH \
+                  --target dovecot/dovecot:${{ inputs.VERSION }}$stage
+        done
+    - name: Push latest tag to docker registry
+      if: ${{ inputs.LATEST == true }}
+      run: |
+        for stage in "-root" "-dev" ""; do 
+          for arch in amd64 arm64; do
+             docker pull --platform $arch dovecot/dovecot:${{ inputs.VERSION }}$stage-$arch && \
+             docker tag dovecot/dovecot:${{ inputs.VERSION }}$stage-$arch dovecot/dovecot:latest$stage-$arch && \
+             docker push dovecot/dovecot:latest$stage-$arch
+          done
+        done
+    - name: Publish latest multiarch manifests
+      if: ${{ inputs.LATEST == true }}
+      run: |
+        for stage in "-root" "-dev" ""; do
+          # then create manifests
+          docker run --rm mplatform/manifest-tool:v2.2.1 --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_TOKEN }} push from-args \
+                  --platforms linux/amd64,linux/arm64 \
+                  --template dovecot/dovecot:latest$stage-ARCH \
+                  --target dovecot/dovecot:latest$stage
+        done
