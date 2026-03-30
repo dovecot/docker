@@ -68,7 +68,7 @@ jobs:
           org.opencontainers.image.licenses=cc-by-sa-4.0
           org.opencontainers.image.authors=dovecot@dovecot.org
     - name: Build root image
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v7
       with:
         context: ${{ inputs.VERSION }}
         push: true
