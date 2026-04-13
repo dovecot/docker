@@ -2,11 +2,12 @@ FROM debian:13-slim AS production-build
 
 ENV container=docker \
     LC_ALL=C.UTF-8
-ARG DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 ARG DOVECOT_REPO_URL=https://github.com/dovecot/core
 ARG PIGEONHOLE_REPO_URL=https://github.com/dovecot/pigeonhole
-ARG DOVECOT_VERSION=2.4.3
-ARG PIGEONHOLE_VERSION=2.4.3
+ARG DOVECOT_VERSION
+ARG PIGEONHOLE_VERSION=$DOVECOT_VERSION
+ARG CONFIG_VERSION
 ARG DOVECOT_BRANCH=$DOVECOT_VERSION
 ARG PIGEONHOLE_BRANCH=$PIGEONHOLE_VERSION
 ARG CFLAGS
@@ -61,7 +62,7 @@ RUN apt-get -y install --no-install-recommends \
   default-libmysqlclient-dev \
   wget
 RUN [ $(uname -m) = x86_64 ] && apt-get -y install libunwind-dev || true
-ADD dovecot-lib.conf /etc/ld.so.conf.d/dovecot-lib.conf
+ADD config/$CONFIG_VERSION/dovecot-lib.conf /etc/ld.so.conf.d/dovecot-lib.conf
 RUN mkdir -p /build/
 RUN chown nobody /build/
 RUN chown nobody /dovecot
@@ -139,13 +140,14 @@ LABEL org.opencontainers.image.authors="dovecot@dovecot.org"
 ENV container=docker \
     LC_ALL=C.UTF-8 TZ=UTC \
     PATH=$PATH:/dovecot/bin:/dovecot/sbin
-ARG DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 ARG VMAIL_UID=1000
 ARG VMAIL_GID=1000
+ARG CONFIG_VERSION
 
 COPY --link --from=production-build /dovecot /dovecot
 
-ADD dovecot-lib.conf /etc/ld.so.conf.d/dovecot-lib.conf
+ADD config/$CONFIG_VERSION/dovecot-lib.conf /etc/ld.so.conf.d/dovecot-lib.conf
 RUN apt-get -y update && \
   apt-get -y install --no-install-recommends \
   tini \
@@ -206,13 +208,13 @@ RUN apt-get -y update && \
  mkdir /srv/vmail -p && \
  mkdir /var/lib/dovecot
 
-COPY auth.conf /etc/dovecot/conf.d/auth.conf
-COPY ssl.conf /etc/dovecot/conf.d/ssl.conf
-COPY fts.conf /etc/dovecot/conf.d/fts.conf
-COPY mail.conf /etc/dovecot/conf.d/mail.conf
-COPY metrics.conf /etc/dovecot/conf.d/metrics.conf
-COPY mail_log.conf /etc/dovecot/conf.d/mail_log.conf
-COPY dovecot.conf /etc/dovecot/dovecot.conf
+ADD config/$CONFIG_VERSION/auth.conf /etc/dovecot/conf.d/auth.conf
+ADD config/$CONFIG_VERSION/ssl.conf /etc/dovecot/conf.d/ssl.conf
+ADD config/$CONFIG_VERSION/fts.conf /etc/dovecot/conf.d/fts.conf
+ADD config/$CONFIG_VERSION/mail.conf /etc/dovecot/conf.d/mail.conf
+ADD config/$CONFIG_VERSION/metrics.conf /etc/dovecot/conf.d/metrics.conf
+ADD config/$CONFIG_VERSION/mail_log.conf /etc/dovecot/conf.d/mail_log.conf
+ADD config/$CONFIG_VERSION/dovecot.conf /etc/dovecot/dovecot.conf
 
 FROM production-base AS production-root
 
@@ -220,7 +222,8 @@ LABEL org.opencontainers.image.authors="dovecot@dovecot.org"
 ENV container=docker \
     LC_ALL=C.UTF-8 TZ=UTC \
     PATH=$PATH:/dovecot/bin:/dovecot/sbin
-ARG DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
+ARG CONFIG_VERSION
 
 RUN groupadd --system dovecot && \
  groupadd --system dovenull && \
@@ -255,7 +258,8 @@ LABEL org.opencontainers.image.authors="dovecot@dovecot.org"
 ENV container=docker \
     LC_ALL=C.UTF-8 TZ=UTC \
     PATH=/bin/sbin:/usr/bin:/usr/sbin:/dovecot/bin:/dovecot/sbin
-ARG DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
+ARG CONFIG_VERSION
 
 RUN chown vmail:vmail /var/lib/dovecot && \
  chown vmail:vmail /srv/vmail && \
@@ -276,7 +280,7 @@ RUN chown vmail:vmail /var/lib/dovecot && \
  setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/anvil && \
  setcap cap_sys_chroot+ep /dovecot/libexec/dovecot/managesieve-login
 
-COPY rootless.conf /etc/dovecot/vendor.d/rootless.conf
+ADD config/$CONFIG_VERSION/rootless.conf /etc/dovecot/vendor.d/rootless.conf
 
 EXPOSE 31024
 EXPOSE 31110
@@ -299,7 +303,8 @@ LABEL org.opencontainers.image.authors="dovecot@dovecot.org"
 ENV container=docker \
     LC_ALL=C.UTF-8 TZ=UTC \
     PATH=$PATH:/dovecot/bin:/dovecot/sbin
-ARG DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
+ARG CONFIG_VERSION
 
 USER root
 
