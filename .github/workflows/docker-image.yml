@@ -6,6 +6,10 @@ on:
       version:
         description: "Image version to build"
         required: true
+      config_version:
+        description: "Configuration version to use"
+        required: true
+        default: "1.0.0"
       latest:
         description: "Publish as latest"
         required: true
@@ -50,9 +54,10 @@ jobs:
           linux/${{ matrix.arch }}
         build-args: |
           DOVECOT_REPO_URL=${{ vars.DOVECOT_REPO_URL }}
-          DOVECOT_BRANCH=${{ inputs.VERSION }}
+          DOVECOT_VERSION=${{ inputs.VERSION }}
           PIGEONHOLE_REPO_URL=${{ vars.PIGEONHOLE_REPO_URL }}
-          PIGEONHOLE_BRANCH=${{ inputs.VERSION }}
+          PIGEONHOLE_VERSION=${{ inputs.VERSION }}
+          CONFIG_VERSION=${{ inputs.CONFIG_VERSION }}
           CFLAGS=${{ vars.CFLAGS }}
           LDFLAGS=${{ vars.LDFLAGS }}
         annotations: |
@@ -76,6 +81,8 @@ jobs:
         target: production-root
         platforms: |
           linux/${{ matrix.arch }}
+        build-args: |
+          CONFIG_VERSION=${{ inputs.CONFIG_VERSION }}
         build-contexts: |
           production-base=docker-image://${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-base-${{ matrix.arch }}
         annotations: |
@@ -99,6 +106,8 @@ jobs:
         target: production-dev
         platforms: |
           linux/${{ matrix.arch }}
+        build-args: |
+          CONFIG_VERSION=${{ inputs.CONFIG_VERSION }}
         build-contexts: |
           production-base=docker-image://${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-base-${{ matrix.arch }}
         annotations: |
@@ -122,6 +131,8 @@ jobs:
         target: production
         platforms: |
           linux/${{ matrix.arch }}
+        build-args: |
+          CONFIG_VERSION=${{ inputs.CONFIG_VERSION }}
         build-contexts: |
           production-base=docker-image://${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-base-${{ matrix.arch }}
           production-dev=docker-image://${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-dev-${{ matrix.arch }}
