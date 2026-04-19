@@ -46,7 +46,6 @@ jobs:
     - name: Build base image
       uses: docker/build-push-action@v7
       with:
-        context: ${{ inputs.VERSION }}
         push: true
         tags: ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-base-${{ matrix.arch }}
         target: production-base
@@ -75,7 +74,6 @@ jobs:
     - name: Build root image
       uses: docker/build-push-action@v7
       with:
-        context: ${{ inputs.VERSION }}
         push: true
         tags: ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-root-${{ matrix.arch }}
         target: production-root
@@ -100,7 +98,6 @@ jobs:
     - name: Build dev image
       uses: docker/build-push-action@v7
       with:
-        context: ${{ inputs.VERSION }}
         push: true
         tags: ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-dev-${{ matrix.arch }}
         target: production-dev
@@ -125,7 +122,6 @@ jobs:
     - name: Build rootless image
       uses: docker/build-push-action@v7
       with:
-        context: ${{ inputs.VERSION }}
         push: true
         tags: ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-${{ matrix.arch }}
         target: production
