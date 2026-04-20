@@ -145,8 +145,31 @@ jobs:
           org.opencontainers.image.licenses=CC-BY-SA-4.0
           org.opencontainers.image.authors=dovecot@dovecot.org
 
-  publish:
+  test:
     needs: [build]
+      matrix:
+        include:
+        - os: ubuntu-24.04
+          arch: amd64
+        - os: ubuntu-24.04-arm
+          arch: arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Login to registry
+      uses: docker/login-action@v4
+      with:
+        registry: ${{ vars.REGISTRY }}
+        username: ${{ github.repository_owner }}
+        password: ${{ github.token }}
+    - name: Run imaptest
+      run: |
+        docker run --name dovecot-${{ inputs.VERSION }} -d --rm -e USER_PASSWORD=swordfish ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-${{ matrix.arch }})
+        # run imaptest for 5 seconds
+        docker exec dovecot-${{ inputs.VERSION }} imaptest host=localhost port=31143 pass=swordfish secs=5
+        docker kill dovecot-${{ inputs.VERSION }}
+
+  publish:
+    needs: [test]
     strategy:
       matrix:
         type:
