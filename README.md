@@ -20,6 +20,20 @@ To run read-only, remember to mount tmpfs to `/tmp` and `/run`, and persistent d
 
 If you want to run without any extra linux capabilities, set `chroot=` to services `imap-login`, `pop3-login`, `submission-login` and `managesieve-login`.
 
+Overriding authentication
+-------------------------
+
+If you override `auth.conf` in the container, note that it also contains
+
+```
+import_environment {
+  DOVEADM_PASSWORD = %{env:DOVEADM_PASSWORD | default}
+  USER_PASSWORD = %{env:USER_PASSWORD | default('{CRYPT}*')}
+}
+```
+
+If you rely on either of these variables, you need to ensure you carry it over.
+
 Listeners
 ------------
 - POP3 on 31110, TLS 31995 (needs config file to enable, disabled by default)
