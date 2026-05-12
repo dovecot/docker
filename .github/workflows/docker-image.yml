@@ -167,9 +167,9 @@ jobs:
         curl -fsSL -o dovecot.mbox https://dovecot.org/res/dovecot.mbox
     - name: Run imaptest
       run: |
-        docker run --name dovecot-${{ inputs.VERSION }} -d --rm -e USER_PASSWORD=swordfish ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-${{ matrix.arch }}
+        docker run -v $PWD/dovecot.mbox:/dovecot.mbox --name dovecot-${{ inputs.VERSION }} -d --rm -e USER_PASSWORD=swordfish ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-${{ matrix.arch }}
         # run imaptest for 5 seconds
-        docker exec dovecot-${{ inputs.VERSION }} imaptest host=localhost port=31143 pass=swordfish secs=5 user=testuser mbox=dovecot.mbox
+        docker exec dovecot-${{ inputs.VERSION }} imaptest host=localhost port=31143 pass=swordfish secs=5 user=testuser mbox=/dovecot.mbox
         docker kill dovecot-${{ inputs.VERSION }}
 
   publish:
