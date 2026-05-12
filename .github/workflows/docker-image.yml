@@ -166,7 +166,7 @@ jobs:
       run: |
         docker run --name dovecot-${{ inputs.VERSION }} -d --rm -e USER_PASSWORD=swordfish ${{ vars.REGISTRY }}/dovecot:${{ inputs.VERSION }}-${{ matrix.arch }}
         # run imaptest for 5 seconds
-        docker exec dovecot-${{ inputs.VERSION }} imaptest host=localhost port=31143 pass=swordfish secs=5
+        docker exec dovecot-${{ inputs.VERSION }} imaptest host=localhost port=31143 pass=swordfish secs=5 user=testuser
         docker kill dovecot-${{ inputs.VERSION }}
 
   publish:
