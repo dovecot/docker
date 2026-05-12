@@ -147,6 +147,7 @@ jobs:
 
   test:
     needs: [build]
+    strategy:
       matrix:
         include:
         - os: ubuntu-24.04
