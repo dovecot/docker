@@ -125,7 +125,9 @@ RUN env CFLAGS="$CFLAGS -ffile-prefix-map=$PWD=." LDFLAGS="$LDFLAGS" CXXFLAGS="$
     --with-retpoline=thunk-inline \
     --with-unfinished-features
 
-RUN make -j V=0
+RUN make src/plugins/settings/pigeonhole-settings-dynamic.c && \
+  sed -i -e 's/ifdef LDAP_PLUGIN/ifdef STORAGE_LDAP/' src/plugins/settings/pigeonhole-settings-dynamic.c && \
+  make -j V=0
 RUN make check || true
 USER root
 RUN make install-strip
