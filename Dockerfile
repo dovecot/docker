@@ -195,6 +195,7 @@ RUN apt-get -y update && \
   libsasl2-modules \
   libpcre2-32-0 \
   netcat-traditional \
+  curl \
   ca-certificates && \
  rm -rf /etc/dovecot && \
  rm -rf /var/lib/apt/lists && \
