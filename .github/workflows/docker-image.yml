@@ -15,7 +15,7 @@ on:
         required: true
         type: boolean
       publish:
-        description: "Publish to GitHub"
+        description: "Publish to Dockerhub"
         required: true
         type: boolean
 
