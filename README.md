@@ -63,6 +63,49 @@ To run these images, simply use `docker run dovecot/dovecot:version`.
 From 2.3.20+ you can also mount /etc/dovecot/conf.d with configuration files, that are going to get read by Dovecot. You can use these to overwrite or add
 settings. Files must end in .conf.
 
+Container Flavors and Extensions
+--------------------------------
+
+The [`flavors/`](flavors/) directory contains modular extensions ("flavors") built on top of the base Dovecot container images. Flavors allow adding custom plugins, drivers, or specialized configurations without bloating the base image.
+
+### Building Flavors
+
+An abstract build tool [`flavors/build.sh`](flavors/build.sh) is provided to build flavors either interactively or via CLI scripts. It will automatically check for and build missing base images if needed, and automatically detects either `docker` or `podman` in your PATH.
+
+**Interactive Wizard Mode:**
+
+```bash
+./flavors/build.sh
+```
+
+**CLI / Scripted Mode:**
+
+```bash
+# Build the Chronos push notification plugin flavor:
+./flavors/build.sh chronos -v 2.4.1
+
+# Build multi-platform with all variants (production, dev, root):
+./flavors/build.sh chronos -v 2.4.1 -p amd64,arm64 -t all --build-base
+
+# Explicitly select a container engine (podman / docker):
+./flavors/build.sh chronos -e podman
+# Or via environment variable:
+CONTAINER_ENGINE=podman ./flavors/build.sh chronos
+```
+
+Alternatively, each flavor directory provides a convenient wrapper script:
+
+```bash
+./flavors/chronos/build.sh
+```
+
+### Adding New Flavors
+
+To add a new flavor, create a new directory under `flavors/<flavor_name>/` containing:
+- `Dockerfile`: Multi-stage Dockerfile that builds against `${BASE_IMAGE_PREFIX}${BASE_TAG}-build` and copies the compiled modules into runtime targets (`${FLAVOR}`, `${FLAVOR}-dev`, `${FLAVOR}-root`).
+- `config/`: Any default configuration files to copy into `/etc/dovecot/conf.d/`.
+- `build.sh`: A minimal wrapper that delegates to `exec "${SCRIPT_DIR}/../build.sh" --flavor <flavor_name> "$@"`.
+
 Help
 ----
 
