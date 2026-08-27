@@ -69,7 +69,7 @@ RUN chown nobody /dovecot
 USER nobody
 
 WORKDIR /build/core
-RUN git clone -b $DOVECOT_BRANCH $DOVECOT_REPO_URL .
+RUN git clone --depth 1 --single-branch -b $DOVECOT_BRANCH $DOVECOT_REPO_URL .
 RUN env VERSION=$DOVECOT_VERSION ./autogen.sh
 RUN env CFLAGS="$CFLAGS -ffile-prefix-map=$PWD=." LDFLAGS="$LDFLAGS" CXXFLAGS="$CFLAGS -ffile-prefix-map=$PWD=. " \
     ./configure \
@@ -108,7 +108,7 @@ USER root
 RUN make install-strip
 USER nobody
 WORKDIR /build/pigeonhole
-RUN git clone -b $PIGEONHOLE_BRANCH $PIGEONHOLE_REPO_URL .
+RUN git clone --depth 1 --single-branch -b $PIGEONHOLE_BRANCH $PIGEONHOLE_REPO_URL .
 RUN env VERSION=$PIGEONHOLE_VERSION ./autogen.sh
 RUN env CFLAGS="$CFLAGS -ffile-prefix-map=$PWD=." LDFLAGS="$LDFLAGS" CXXFLAGS="$CFLAGS -ffile-prefix-map=$PWD=. " \
     ./configure \
@@ -135,6 +135,11 @@ RUN chown -R root:root /dovecot
 RUN wget https://github.com/dovecot/imaptest/releases/download/latest/imaptest-$(uname -m)-debian-13 -O /dovecot/bin/imaptest
 RUN chmod 0755 /dovecot/bin/imaptest
 
+ENV PATH=$PATH:/dovecot/bin:/dovecot/sbin \
+    PKG_CONFIG_PATH=/dovecot/lib/pkgconfig:/dovecot/share/pkgconfig:${PKG_CONFIG_PATH:-}
+WORKDIR /build
+
+
 FROM debian:13-slim AS production-base
 
 LABEL org.opencontainers.image.authors="dovecot@dovecot.org"
@@ -147,7 +152,7 @@ ARG VMAIL_UID=1000
 ARG VMAIL_GID=1000
 ARG CONFIG_VERSION
 
-COPY --link --from=production-build /dovecot /dovecot
+COPY --from=production-build /dovecot /dovecot
 
 ADD config/$CONFIG_VERSION/dovecot-lib.conf /etc/ld.so.conf.d/dovecot-lib.conf
 RUN apt-get -y update && \

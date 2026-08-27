@@ -32,7 +32,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG VMAIL_UID=1000
 ARG VMAIL_GID=1000
 
-COPY --link --from=production-build /dovecot /dovecot
+COPY --from=production-build /dovecot /dovecot
 RUN touch /dovecot/base && \
  rm -rf /etc/dovecot && \
  rm -rf /var/lib/apt/lists && \
