@@ -134,6 +134,9 @@ RUN make install-strip
 RUN chown -R root:root /dovecot
 RUN wget https://github.com/dovecot/imaptest/releases/download/latest/imaptest-$(uname -m)-debian-13 -O /dovecot/bin/imaptest
 RUN chmod 0755 /dovecot/bin/imaptest
+RUN rm -f -r /dovecot/include \
+             /dovecot/share/aclocal \
+             /dovecot/share/man
 
 ENV PATH=$PATH:/dovecot/bin:/dovecot/sbin \
     PKG_CONFIG_PATH=/dovecot/lib/pkgconfig:/dovecot/share/pkgconfig:${PKG_CONFIG_PATH:-}
@@ -330,6 +333,9 @@ RUN apt remove --allow-remove-essential -yq \
  ln -srf /bin/true /usr/share/debconf/frontend && \
  dpkg --remove --ignore-depends=dpkg --ignore-depends=base-files --force-remove-essential tar mawk && \
  ln -srf /bin/true /bin/tar && \
+ rm -f -r /usr/share/aclocal \
+          /usr/share/doc \
+          /usr/share/man && \
  dpkg --remove --force-remove-essential --force-depends apt sqv dpkg diffutils findutils init-system-helpers sysvinit-utils coreutils mount grep debian-utils libc-bin
 
 EXPOSE 31024
