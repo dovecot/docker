@@ -63,6 +63,18 @@ To run these images, simply use `docker run dovecot/dovecot:version`.
 From 2.3.20+ you can also mount /etc/dovecot/conf.d with configuration files, that are going to get read by Dovecot. You can use these to overwrite or add
 settings. Files must end in .conf.
 
+Building locally
+----------------
+
+For v2.4, you can use
+
+```sh
+docker buildx build --tag dovecot/dovecot:2.4.x --build-arg DOVECOT_VERSION=2.4.x --build-arg CONFIG_VERSION=1.0.x .
+```
+
+to build the image. Version must exist in dovecot/core and pigeonhole/core repositories. `CONFIG_VERSION` refers to config/ directory.
+
+
 Help
 ----
 
