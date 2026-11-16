@@ -1,0 +1,62 @@
+name: Weekly base image rebuild
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: weekly-rebuild
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+    # Compare the first (Debian) layer of the published latest image with
+    # the current base image from the Dockerfile, for both architectures.
+    - name: Check whether the base image has moved
+      id: check
+      run: |
+        base=$(awk '/^FROM debian:.* AS production-base/ {print $2}' Dockerfile)
+        [ -n "$base" ] || { echo "::error::No debian base image found in Dockerfile"; exit 1; }
+        moved=false
+        for arch in amd64 arm64; do
+          want=$(skopeo inspect --retry-times 3 --config --override-os linux --override-arch $arch "docker://docker.io/library/$base" | jq -r '.rootfs.diff_ids[0] // empty')
+          have=$(skopeo inspect --retry-times 3 --config --override-os linux --override-arch $arch docker://docker.io/dovecot/dovecot:latest | jq -r '.rootfs.diff_ids[0] // empty')
+          if [ -z "$want" ] || [ -z "$have" ]; then
+            echo "::error::Could not read the base layer for $arch"; exit 1
+          fi
+          echo "$arch: $base $want, dovecot/dovecot:latest $have"
+          [ "$want" = "$have" ] || moved=true
+        done
+        echo "moved=$moved" >> "$GITHUB_OUTPUT"
+    # Rebuild the version currently published as latest on Docker Hub.
+    - name: Find latest version
+      if: steps.check.outputs.moved == 'true'
+      id: version
+      run: |
+        hub=https://hub.docker.com/v2/repositories/dovecot/dovecot/tags
+        digest=$(curl -sf --retry 3 "$hub/latest" | jq -r '.digest // empty')
+        [ -n "$digest" ] || { echo "::error::Could not read the digest of latest"; exit 1; }
+        version=$(curl -sf --retry 3 "$hub?page_size=100&ordering=last_updated" \
+          | jq -r --arg d "$digest" '.results[] | select(.digest == $d and (.name | test("^[0-9]+(\\.[0-9]+)+$"))) | .name')
+        [ "$(echo "$version" | wc -w)" -eq 1 ] || { echo "::error::Expected one version tag for latest, got: '$version'"; exit 1; }
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+    - name: Start build
+      if: steps.check.outputs.moved == 'true'
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh workflow run docker-image.yml --repo "${{ github.repository }}" --ref main \
+          -f version=${{ steps.version.outputs.version }} -f config_version=1.0.0 \
+          -f latest=true -f publish=true
